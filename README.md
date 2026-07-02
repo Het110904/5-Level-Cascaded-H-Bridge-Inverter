@@ -1,75 +1,185 @@
-# Fault-Tolerant 5-Level CHB Inverter for EV Traction (LSPWM-PD)
+# Design and Harmonic Analysis of a Fault-Tolerant 5-Level Cascaded H-Bridge Inverter using LSPWM-PD for EV Traction
+
+<p align="center">
+
+![MATLAB](https://img.shields.io/badge/MATLAB-R2024b-orange?style=for-the-badge)
+![Simulink](https://img.shields.io/badge/Simulink-Model-blue?style=for-the-badge)
+![IEEE-519](https://img.shields.io/badge/IEEE--519-THD%20PASS-brightgreen?style=for-the-badge)
+
+</p>
+
+---
 
 ## Overview
-This repository contains a MATLAB/Simulink model of a 5-Level Cascaded H-Bridge (CHB) Inverter designed specifically for Electric Vehicle (EV) traction motors. 
 
-The primary feature of this project is a custom **"Limp-Home" fault-tolerance logic**. If a hardware switch fails during operation, the system automatically isolates the damaged cell and dynamically transitions from a 5-level output to a 3-level output. This prevents a total system shutdown and allows the EV to continue moving safely. Additionally, an LC filter is implemented to ensure the output power quality strictly adheres to IEEE-519 harmonic standards.
+This repository presents a MATLAB/Simulink implementation of a **fault-tolerant 5-Level Cascaded H-Bridge (CHB) inverter** for EV traction applications using **Level Shifted PWM (Phase Disposition)**. A passive LC filter reduces harmonic distortion while a limp-home control strategy allows continued operation after a switch fault by reconfiguring the inverter into a 3-level topology.
 
-## Overall System Specifications
+---
 
-| Parameter Category | Specific Parameter | Value |
-| :--- | :--- | :--- |
-| **Hardware Topology** | Inverter Configuration | Cascaded H-Bridge (8x IGBTs) |
-| | Normal / Fault Levels | 5-Level (Healthy) / 3-Level (Faulted) |
-| **Control Logic** | Modulation Technique | LSPWM-PD |
-| | Carrier Switching Frequency | 4000 Hz |
-| **Filter Design** | Passive LC Low-Pass | 5 mH, 150 µF |
+# Repository Contents
 
-## Simulink Architecture & Control Logic
+- 📄 [APEC IA REPORT UPD.pdf](./5%20Level%20CHB/APEC%20IA%20REPORT%20UPD.pdf)
+- 📄 [Tuning of LC filter with comparisions.pdf](./5%20Level%20CHB/Tuning%20of%20LC%20filter%20with%20comparisions.pdf)
 
-### Main Inverter Build
-*The complete simulation environment featuring the 5-level Cascaded H-Bridge setup, isolating circuit breakers, and traction motor load.*
+---
 
-![Main Architecture](5%20Level%20CHB/Entire%20model%20pic.jpg)
+# Complete Simulink Model
 
-*A close-up view of the dual H-Bridge cells operating from isolated 100V DC sources.*
+<p align="center">
+<img src="./5%20Level%20CHB/Entire%20model%20pic.jpg" width="900">
+</p>
 
-![H-Bridge Close Up](5%20Level%20CHB/Close%20up%20view%20of%20H%20bridges.jpg)
+---
 
-### Modulation Logic
-*Level-Shifted Phase Disposition (LSPWM-PD) logic, utilizing four carrier waves stacked vertically against a 1.90 amplitude reference sine wave.*
+# Cascaded H-Bridge Topology
 
-![Control Logic](5%20Level%20CHB/Control%20Logic.jpg)
+<p align="center">
+<img src="./5%20Level%20CHB/Close%20up%20view%20of%20H%20bridges.jpg" width="850">
+</p>
 
-## Simulation Results: Dynamic Fault Bypass
+---
 
-The most critical test of this system is the dynamic cell bypass. The time-plot graphs below prove the transition is smooth and safe.
-* **$t = 0.0$ to $0.5$ seconds:** The system operates in a healthy state, outputting a 5-level staircase ($\pm200$V peak).
-* **$t = 0.5$ seconds:** A short-circuit fault is simulated. The system isolates the damaged hardware and instantly drops to a 3-level output ($\pm100$V peak).
+# LSPWM-PD Control Logic
 
-![CHBI Scope](5%20Level%20CHB/CHBI%20Scope%20JPEG%20Version.jpg)
+<p align="center">
+<img src="./5%20Level%20CHB/Control%20Logic.jpg" width="900">
+</p>
 
-*Simulink time-plot showing the motor voltage (Red) and motor current (Blue) during the transition.*
+---
 
-![Time Plot Graph](5%20Level%20CHB/Time%20Plot%20Graph.tif)
+# Healthy and Faulted Output
 
-*After passing through the LC filter, the load receives this smoothed continuous AC waveform across the fault transition.*
+<p align="center">
+<img src="./5%20Level%20CHB/CHBI%20Scope%20JPEG%20Version.jpg" width="900">
+</p>
 
-![Filtered Waveform](5%20Level%20CHB/Filtered%20Waveform%20(V_Out).tif)
+The inverter operates as a healthy 5-level inverter and automatically transitions into a 3-level limp-home mode after a fault at **0.5 s**.
 
-### Drive Stability
-*The Voltage vs. Current XY graph proves that when the car drops from normal driving into the emergency limp-home mode, the motor stays completely stable and does not lose control.*
+---
 
-![XY Graph](5%20Level%20CHB/XY%20Graph%20JPEG%20Version.jpg)
+# LC Filter Output
 
-## Harmonic Analysis (THD)
+<p align="center">
+<img src="./5%20Level%20CHB/Filtered%20Waveform%20(V_Out)%20JPEG%20Version.jpg" width="900">
+</p>
 
-Fast Fourier Transform (FFT) analysis was conducted to measure power quality and verify compliance with IEEE-519 standards (<5% THD).
+The passive LC filter (5 mH, 150 µF) reduces switching harmonics and produces a nearly sinusoidal output.
 
-### 1. Healthy State (5-Level)
-*Before filtering, the raw 5-level staircase yields a natural THD of **30.59%**.*
+---
 
-![Raw Healthy THD](5%20Level%20CHB/Raw%20Staircase%2030.59%20%25.tif)
+# FFT Analysis
 
-*After passing through the LC filter, the THD is successfully crushed to **2.24%**, passing strict grid and motor safety limits.*
+## Healthy Output (Before Filter)
 
-![Filtered Healthy THD](5%20Level%20CHB/Pure%20Sine%20Wave%202.24%25.tif)
+<p align="center">
+<img src="./5%20Level%20CHB/Raw%20Staircase%2030.59%20%25%20JPEG%20Version.jpg" width="800">
+</p>
 
-### 2. Faulted State "Limp-Home" (3-Level)
-*During the emergency bypass, harmonic distortion spikes (Raw THD = **78.26%**) due to the loss of voltage levels.*
+**THD = 30.59 %**
 
-![Raw Faulted THD](5%20Level%20CHB/Raw%20Staircase%2078.26%20%25.tif)
+---
 
-*After passing through the LC filter, the post-fault THD is brought to **42.55%**. While higher than normal operation, it successfully maintains fundamental drive stability to allow the EV to limp home safely.*
+## Faulted Output (Before Filter)
 
-![Filtered Faulted THD](5%20Level%20CHB/Limp%20Home%2042.55%20%25%20JPEG%20Version.jpg)
+<p align="center">
+<img src="./5%20Level%20CHB/Raw%20Staircase%2078.26%20%25%20JPEG%20Version.jpg" width="800">
+</p>
+
+**THD = 78.26 %**
+
+---
+
+## Healthy Output (After Filter)
+
+<p align="center">
+<img src="./5%20Level%20CHB/Pure%20Sine%20Wave%202.24%25%20JPEG%20Version.jpg" width="800">
+</p>
+
+**THD = 2.24 % (IEEE-519 Compliant)**
+
+---
+
+## Faulted Output (After Filter)
+
+<p align="center">
+<img src="./5%20Level%20CHB/Limp%20Home%2042.55%20%25%20JPEG%20Version.jpg" width="800">
+</p>
+
+**THD = 42.55 %**
+
+---
+
+# Motor Response
+
+## Voltage & Current
+
+<p align="center">
+<img src="./5%20Level%20CHB/Time%20Plot%20Graph%20JPEG%20Version.jpg" width="900">
+</p>
+
+---
+
+## XY Characteristics
+
+<p align="center">
+<img src="./5%20Level%20CHB/XY%20Graph%20JPEG%20Version.jpg" width="850">
+</p>
+
+---
+
+# Simulation Specifications
+
+| Parameter | Value |
+|-----------|-------|
+| Software | MATLAB / Simulink R2024b |
+| Solver | ode23tb |
+| PWM | LSPWM-PD |
+| Switching Frequency | 4000 Hz |
+| Fundamental Frequency | 50 Hz |
+| Modulation Index | 0.95 |
+| DC Sources | 2 × 100 V |
+| Filter | 5 mH + 150 µF |
+| Load | Series RL |
+
+---
+
+# Performance Summary
+
+| Condition | THD |
+|-----------|----:|
+| Healthy (Before Filter) | 30.59 % |
+| Healthy (After Filter) | **2.24 %** |
+| Faulted (Before Filter) | 78.26 % |
+| Faulted (After Filter) | 42.55 % |
+
+---
+
+# Key Features
+
+- 5-Level Cascaded H-Bridge Inverter
+- Fault-Tolerant Limp-Home Operation
+- LSPWM-PD Control
+- LC Harmonic Filter
+- FFT Harmonic Analysis
+- IEEE-519 Compliance
+- EV Traction Drive Application
+
+---
+
+# Software Required
+
+- MATLAB R2024b
+- Simulink
+- Simscape Electrical
+
+---
+
+# Author
+
+**Het Kansara**
+
+Department of Electrical Engineering
+
+---
+
+⭐ If you found this project useful, consider starring the repository.
